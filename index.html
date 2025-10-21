@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login - WIAA Football Bracket Challenge</title>
+    <style>
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 5%;
+        text-align: center;
+      }
+      * {
+        font-family: "Helvetica";
+      }
+      input {
+        padding: 10px;
+        width: 200px;
+        margin: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      #message {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="center">
+      <img src="WIAA_logo.png" alt="WIAA Logo" width="100px">
+      <h1>WIAA Football Bracket Challenge</h1>
+      <p id="formTitle">Login to your account</p>
+
+      <!-- Login/Signup Form -->
+      <form id="authForm">
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
+        <button type="submit" id="submitBtn">Login</button>
+      </form>
+
+      <!-- Toggle between login and sign up -->
+      <p>
+        <span id="toggleText">Don't have an account?</span>
+        <a href="#" id="toggleLink">Sign up here</a>
+      </p>
+
+      <p id="message"></p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        setPersistence,
+        browserLocalPersistence
+      } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+      // 🔥 Your Firebase project configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCAJ-XJGN5SfKfHwKS_A9yqlC9GQjCUGLI",
+        authDomain: "wiaa-football-challenge.firebaseapp.com",
+        projectId: "wiaa-football-challenge",
+        storageBucket: "wiaa-football-challenge.firebasestorage.app",
+        messagingSenderId: "966217254801",
+        appId: "1:966217254801:web:c3f9484e983ce356697c30",
+        measurementId: "G-6PKJNQNKMM"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      // Elements
+      const form = document.getElementById("authForm");
+      const message = document.getElementById("message");
+      const toggleLink = document.getElementById("toggleLink");
+      const toggleText = document.getElementById("toggleText");
+      const formTitle = document.getElementById("formTitle");
+      const submitBtn = document.getElementById("submitBtn");
+
+      let isLogin = true; // Track login vs signup mode
+
+      // 🔄 Toggle Login / Signup mode
+      toggleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+
+        if (isLogin) {
+          formTitle.textContent = "Login to your account";
+          submitBtn.textContent = "Login";
+          toggleText.textContent = "Don't have an account?";
+          toggleLink.textContent = "Sign up here";
+          message.textContent = "";
+        } else {
+          formTitle.textContent = "Create a new account";
+          submitBtn.textContent = "Sign Up";
+          toggleText.textContent = "Already have an account?";
+          toggleLink.textContent = "Login here";
+          message.textContent = "";
+        }
+      });
+
+      // 🔐 Handle login/signup
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if (isLogin) {
+          // --- LOGIN ---
+          setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+              return signInWithEmailAndPassword(auth, email, password);
+            })
+            .then((userCredential) => {
+              message.style.color = "green";
+              message.textContent = "Login successful!";
+              // Redirect to your protected page
+              window.location.href = "dashboard.html";
+            })
+            .catch((error) => {
+              message.style.color = "red";
+              message.textContent = error.message;
+            });
+        } else {
+          // --- SIGN UP ---
+          createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+              message.style.color = "green";
+              message.textContent = "Account created! You can now log in.";
+              // Switch back to login mode
+              isLogin = true;
+              formTitle.textContent = "Login to your account";
+              submitBtn.textContent = "Login";
+              toggleText.textContent = "Don't have an account?";
+              toggleLink.textContent = "Sign up here";
+            })
+            .catch((error) => {
+              message.style.color = "red";
+              message.textContent = error.message;
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
